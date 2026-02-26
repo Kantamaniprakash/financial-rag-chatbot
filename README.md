@@ -135,4 +135,4 @@ financial-rag-chatbot/
 ## Author
 
 **Satya Sai Prakash Kantamani** — Data Scientist
-[GitHub](https://github.com/kantamaniprakash) · [LinkedIn](https://www.linkedin.com/in/prakashkantamani) · [Email](mailto:satyasai.kantamani@gmail.com)
+[GitHub](https://github.com/kantamaniprakash) · [LinkedIn](https://www.linkedin.com/in/prakash-kantamani) · [Email](mailto:satyasai.kantamani@gmail.com)
