@@ -114,6 +114,9 @@ if "chunk_count" not in st.session_state:
 
 def load_and_chunk_pdfs(uploaded_files: list) -> list:
     """Load PDFs and split into chunks."""
+    import fitz
+    from langchain.docstore.document import Document
+
     all_docs = []
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
@@ -121,16 +124,20 @@ def load_and_chunk_pdfs(uploaded_files: list) -> list:
         separators=["\n\n", "\n", ".", " "]
     )
     for uploaded_file in uploaded_files:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            tmp.write(uploaded_file.read())
-            tmp_path = tmp.name
-        loader = PyMuPDFLoader(tmp_path)
-        docs = loader.load()
-        for doc in docs:
-            doc.metadata["source_file"] = uploaded_file.name
+        pdf_bytes = uploaded_file.read()
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        docs = []
+        for page_num in range(doc.page_count):
+            page = doc[page_num]
+            text = page.get_text()
+            if text.strip():
+                docs.append(Document(
+                    page_content=text,
+                    metadata={"source_file": uploaded_file.name, "page": page_num + 1}
+                ))
+        doc.close()
         chunks = splitter.split_documents(docs)
         all_docs.extend(chunks)
-        Path(tmp_path).unlink(missing_ok=True)
     return all_docs
 
 
