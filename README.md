@@ -107,6 +107,7 @@ streamlit run app.py
 ```
 financial-rag-chatbot/
 ├── app.py              # Main Streamlit app (UI + RAG pipeline + PDF loader)
+├── eval_harness.py     # Retrieval + generation evaluation harness
 ├── .streamlit/
 │   └── config.toml     # Streamlit server config (XSRF/CORS settings)
 ├── requirements.txt    # Python dependencies
@@ -135,6 +136,37 @@ financial-rag-chatbot/
 - **Cross-platform**: Works on Windows, macOS, and Linux (PDF loaded from bytes, not file paths)
 
 ---
+
+## Evaluation
+
+`eval_harness.py` evaluates the retriever and the generator as separate
+components, which is the current best practice for debugging RAG systems —
+it tells you whether a bad answer came from the retriever surfacing the
+wrong chunks or the LLM misusing good ones.
+
+It ships with its own fixture corpus (10 synthetic financial passages) and
+a labeled eval set (10 questions with known-relevant chunks and expected
+facts), so it runs standalone against a fresh in-memory Chroma store —
+no uploaded PDFs required.
+
+**Retrieval metrics**
+- **Hit Rate@k** — fraction of questions where a relevant chunk is in the top-k results
+- **MRR@k** — mean reciprocal rank of the first relevant chunk
+
+**Generation metrics**
+- **Faithfulness** — LLM-judge pass/fail on whether the answer is grounded in the retrieved context
+- **Answer relevancy** — LLM-judge 1-5 score for how directly the answer addresses the question
+- **Keyword coverage** — sanity check that expected facts appear in the answer
+
+```bash
+export OPENAI_API_KEY=sk-...
+python eval_harness.py            # k=5 by default
+python eval_harness.py --k 3 --output results.json
+```
+
+This prints a summary report plus a per-question pass/fail breakdown, and
+writes full results (including every generated answer and judge reasoning)
+to `eval_results.json`.
 
 ## Future Improvements
 - [ ] Add support for Excel/CSV financial data ingestion
