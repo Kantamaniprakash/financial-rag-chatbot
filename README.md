@@ -11,8 +11,8 @@
 
 ---
 
-<!-- TODO: add a screenshot or short demo GIF of the chat UI here -->
-> **Note:** A screenshot / demo GIF of the app in action should be added here.
+![Financial RAG Chatbot — dark-themed Streamlit chat UI with sidebar for OpenAI API key entry and PDF upload](docs/screenshot.png)
+*The app on first launch: enter an OpenAI API key in the sidebar, upload financial PDFs, and start asking questions.*
 
 ## Overview
 
@@ -76,6 +76,13 @@ cd financial-rag-chatbot
 ```
 
 ### 2. Install dependencies
+
+With [uv](https://docs.astral.sh/uv/) (recommended — uses the committed lockfile):
+```bash
+uv sync
+```
+
+Or with pip:
 ```bash
 pip install -r requirements.txt
 ```
@@ -115,13 +122,17 @@ financial-rag-chatbot/
 ├── eval_harness.py     # Retrieval + generation evaluation harness
 ├── tests/
 │   └── test_smoke.py   # CI smoke tests (ast-parse sources, check key files)
+├── docs/
+│   └── screenshot.png  # UI screenshot embedded in this README
 ├── .streamlit/
 │   └── config.toml     # Streamlit server config (XSRF/CORS enabled)
 ├── .github/
-│   ├── workflows/ci.yml    # CI: lint + tests on Python 3.10–3.12
+│   ├── workflows/ci.yml    # CI: uv-locked install, lint + tests on Python 3.10–3.12
 │   └── dependabot.yml      # Weekly pip + GitHub Actions updates
 ├── .env.example        # Template for required environment variables
-├── requirements.txt    # Python dependencies
+├── pyproject.toml      # Project metadata + dependencies (PEP 621)
+├── uv.lock             # Locked dependency resolution (uv)
+├── requirements.txt    # Pip-compatible dependency pins
 ├── LICENSE             # MIT
 └── README.md
 ```
@@ -142,10 +153,32 @@ financial-rag-chatbot/
 
 ## Results
 
-- **Retrieval speed**: Sub-second on typical 50-page financial PDFs
-- **Grounded answers**: Source-cited responses with zero hallucination on factual queries
-- **Scalability**: ChromaDB persistent store handles 100+ page document collections
-- **Cross-platform**: Works on Windows, macOS, and Linux (PDF loaded from bytes, not file paths)
+**What is measured.** The repo ships an evaluation harness (`eval_harness.py`, see
+[Evaluation](#evaluation)) that scores the retriever and the generator as separate components
+against a committed fixture corpus (10 synthetic financial passages) and a labeled eval set
+(10 questions with known-relevant chunks and expected facts):
+
+| Component | Metric | Method |
+|-----------|--------|--------|
+| Retriever | Hit Rate@k | fraction of questions with a relevant chunk in the top-k |
+| Retriever | MRR@k | mean reciprocal rank of the first relevant chunk |
+| Generator | Faithfulness | LLM-judge pass/fail: is the answer grounded in retrieved context? |
+| Generator | Answer relevancy | LLM-judge 1–5 score for how directly the answer addresses the question |
+| Generator | Keyword coverage | sanity check that expected facts appear in the answer |
+
+**What is not claimed.** No benchmark numbers are published in this repo: running the harness
+requires an OpenAI API key, and its output (`eval_results.json`) is deliberately not committed
+so stale numbers never drift out of sync with the code. Qualitative observations from
+development — sub-second retrieval on ~50-page PDFs, ChromaDB comfortably indexing 100+ page
+collections on a single laptop — are anecdotal, not benchmarked.
+
+### Limitations
+
+- **Synthetic eval corpus** — the harness's 10-passage fixture set is small and synthetic; scores on it do not guarantee performance on real 10-Ks or earnings transcripts.
+- **LLM-judge subjectivity** — faithfulness and relevancy are scored by an LLM judge, which carries its own biases and run-to-run variance.
+- **No hallucination guarantee** — the system prompt enforces grounding and citation, but LLM outputs can still contain unsupported statements; citations identify retrieved chunks, not independently verified facts.
+- **API cost and dependency** — every indexed chunk and every question incurs OpenAI embedding/completion calls; there is no local-model fallback.
+- **Single-machine scale, text PDFs only** — ChromaDB runs embedded with local persistence (no auth, no multi-user serving), and PyMuPDF extracts embedded text only, so scanned/image-based PDFs need OCR that is not included.
 
 ---
 
