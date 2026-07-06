@@ -76,6 +76,13 @@ cd financial-rag-chatbot
 ```
 
 ### 2. Install dependencies
+
+With [uv](https://docs.astral.sh/uv/) (recommended — uses the committed lockfile):
+```bash
+uv sync
+```
+
+Or with pip:
 ```bash
 pip install -r requirements.txt
 ```
@@ -115,13 +122,17 @@ financial-rag-chatbot/
 ├── eval_harness.py     # Retrieval + generation evaluation harness
 ├── tests/
 │   └── test_smoke.py   # CI smoke tests (ast-parse sources, check key files)
+├── docs/
+│   └── screenshot.png  # UI screenshot embedded in this README
 ├── .streamlit/
 │   └── config.toml     # Streamlit server config (XSRF/CORS enabled)
 ├── .github/
-│   ├── workflows/ci.yml    # CI: lint + tests on Python 3.10–3.12
+│   ├── workflows/ci.yml    # CI: uv-locked install, lint + tests on Python 3.10–3.12
 │   └── dependabot.yml      # Weekly pip + GitHub Actions updates
 ├── .env.example        # Template for required environment variables
-├── requirements.txt    # Python dependencies
+├── pyproject.toml      # Project metadata + dependencies (PEP 621)
+├── uv.lock             # Locked dependency resolution (uv)
+├── requirements.txt    # Pip-compatible dependency pins
 ├── LICENSE             # MIT
 └── README.md
 ```
