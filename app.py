@@ -17,8 +17,8 @@ import tempfile
 # LangChain imports
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_chroma import Chroma
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
@@ -116,7 +116,7 @@ if "chunk_count" not in st.session_state:
 def load_and_chunk_pdfs(uploaded_files: list) -> list:
     """Load PDFs and split into chunks."""
     import fitz
-    from langchain.docstore.document import Document
+    from langchain_core.documents import Document
 
     all_docs = []
     splitter = RecursiveCharacterTextSplitter(
