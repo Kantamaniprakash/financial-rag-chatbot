@@ -2,12 +2,17 @@
 
 > A Retrieval-Augmented Generation (RAG) chatbot for financial document analysis — powered by LangChain, OpenAI GPT-4, ChromaDB, and Streamlit.
 
+[![CI](https://github.com/Kantamaniprakash/financial-rag-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/Kantamaniprakash/financial-rag-chatbot/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)
 ![LangChain](https://img.shields.io/badge/LangChain-0.2+-green?style=flat-square)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-orange?style=flat-square)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.38+-red?style=flat-square)
 
 ---
+
+<!-- TODO: add a screenshot or short demo GIF of the chat UI here -->
+> **Note:** A screenshot / demo GIF of the app in action should be added here.
 
 ## Overview
 
@@ -66,7 +71,7 @@ Answer + Source Citations (file name + page number)
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/kantamaniprakash/financial-rag-chatbot.git
+git clone https://github.com/Kantamaniprakash/financial-rag-chatbot.git
 cd financial-rag-chatbot
 ```
 
@@ -108,9 +113,16 @@ streamlit run app.py
 financial-rag-chatbot/
 ├── app.py              # Main Streamlit app (UI + RAG pipeline + PDF loader)
 ├── eval_harness.py     # Retrieval + generation evaluation harness
+├── tests/
+│   └── test_smoke.py   # CI smoke tests (ast-parse sources, check key files)
 ├── .streamlit/
-│   └── config.toml     # Streamlit server config (XSRF/CORS settings)
+│   └── config.toml     # Streamlit server config (XSRF/CORS enabled)
+├── .github/
+│   ├── workflows/ci.yml    # CI: lint + tests on Python 3.10–3.12
+│   └── dependabot.yml      # Weekly pip + GitHub Actions updates
+├── .env.example        # Template for required environment variables
 ├── requirements.txt    # Python dependencies
+├── LICENSE             # MIT
 └── README.md
 ```
 
