@@ -5,9 +5,9 @@
 [![CI](https://github.com/Kantamaniprakash/financial-rag-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/Kantamaniprakash/financial-rag-chatbot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)
-![LangChain](https://img.shields.io/badge/LangChain-0.2+-green?style=flat-square)
+![LangChain](https://img.shields.io/badge/LangChain-0.3+-green?style=flat-square)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-orange?style=flat-square)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.38+-red?style=flat-square)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.58+-red?style=flat-square)
 
 ---
 
