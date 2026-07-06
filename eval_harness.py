@@ -32,8 +32,8 @@ import argparse
 from statistics import mean
 
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
-from langchain.docstore.document import Document
+from langchain_chroma import Chroma
+from langchain_core.documents import Document
 
 # ─── Fixture Corpus ─────────────────────────────────────────────────────────
 # Synthetic financial-report passages, each tagged with a stable chunk_id so
