@@ -2,12 +2,15 @@
 
 > A Retrieval-Augmented Generation (RAG) chatbot for financial document analysis — powered by LangChain, OpenAI GPT-4, ChromaDB, and Streamlit.
 
+[![Live Demo](https://img.shields.io/badge/%F0%9F%A4%97%20Live%20Demo-Hugging%20Face%20Spaces-yellow)](https://huggingface.co/spaces/Prakashkantamani/financial-rag-chatbot)
 [![CI](https://github.com/Kantamaniprakash/financial-rag-chatbot/actions/workflows/ci.yml/badge.svg)](https://github.com/Kantamaniprakash/financial-rag-chatbot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?style=flat-square&logo=python)
 ![LangChain](https://img.shields.io/badge/LangChain-0.3+-green?style=flat-square)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-orange?style=flat-square)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.58+-red?style=flat-square)
+
+**[▶ Try the live demo](https://huggingface.co/spaces/Prakashkantamani/financial-rag-chatbot)** — upload a financial PDF and ask questions. Bring your own OpenAI API key (entered in the sidebar, used only for your session, never stored).
 
 ---
 
