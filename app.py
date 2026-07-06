@@ -9,6 +9,7 @@ GitHub: https://github.com/kantamaniprakash
 """
 
 import os
+import html
 import streamlit as st
 from pathlib import Path
 import tempfile
@@ -187,7 +188,7 @@ def build_qa_chain(vector_store: Chroma, api_key: str) -> ConversationalRetrieva
 
 
 def format_sources(source_docs: list) -> str:
-    """Format source document citations."""
+    """Format source document citations (HTML-escaped to prevent injection)."""
     seen = set()
     chips = []
     for doc in source_docs:
@@ -196,7 +197,9 @@ def format_sources(source_docs: list) -> str:
         key = f"{src} p.{page}"
         if key not in seen:
             seen.add(key)
-            chips.append(f'<span class="source-chip">📄 {src} · Page {page}</span>')
+            chips.append(
+                f'<span class="source-chip">📄 {html.escape(str(src))} · Page {html.escape(str(page))}</span>'
+            )
     return " ".join(chips)
 
 
@@ -287,19 +290,20 @@ if not st.session_state.vector_store:
     > *"Compare operating margins between segments"*
     """)
 else:
-    # Display chat history
+    # Display chat history (content is HTML-escaped so document/model text
+    # cannot inject HTML or scripts into the page)
     for msg in st.session_state.messages:
         if msg["role"] == "user":
-            st.markdown(f'<div class="chat-msg-user">👤 {msg["content"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-msg-user">👤 {html.escape(msg["content"])}</div>', unsafe_allow_html=True)
         else:
-            st.markdown(f'<div class="chat-msg-assistant">🤖 {msg["content"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-msg-assistant">🤖 {html.escape(msg["content"])}</div>', unsafe_allow_html=True)
             if "sources" in msg:
                 st.markdown(msg["sources"], unsafe_allow_html=True)
 
     # Chat input
     if prompt := st.chat_input("Ask a question about your financial documents..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
-        st.markdown(f'<div class="chat-msg-user">👤 {prompt}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-msg-user">👤 {html.escape(prompt)}</div>', unsafe_allow_html=True)
 
         with st.spinner("Searching documents and generating answer..."):
             try:
@@ -312,7 +316,7 @@ else:
                     "content": answer,
                     "sources": sources_html
                 })
-                st.markdown(f'<div class="chat-msg-assistant">🤖 {answer}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="chat-msg-assistant">🤖 {html.escape(answer)}</div>', unsafe_allow_html=True)
                 if sources_html:
                     st.markdown("**Sources:** " + sources_html, unsafe_allow_html=True)
             except Exception as e:
