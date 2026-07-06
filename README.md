@@ -11,8 +11,8 @@
 
 ---
 
-<!-- TODO: add a screenshot or short demo GIF of the chat UI here -->
-> **Note:** A screenshot / demo GIF of the app in action should be added here.
+![Financial RAG Chatbot — dark-themed Streamlit chat UI with sidebar for OpenAI API key entry and PDF upload](docs/screenshot.png)
+*The app on first launch: enter an OpenAI API key in the sidebar, upload financial PDFs, and start asking questions.*
 
 ## Overview
 
