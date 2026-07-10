@@ -64,7 +64,7 @@ Answer + Source Citations (file name + page number)
 | Retrieval       | MMR (Maximal Marginal Relevance)         |
 | Orchestration   | LangChain ConversationalRetrievalChain   |
 | PDF Parsing     | PyMuPDF (fitz) — reads from bytes for cross-platform compatibility |
-| Text Splitting  | RecursiveCharacterTextSplitter (1000 chars, 200 overlap) |
+| Text Splitting  | Sentence-aware token-budget chunker (256 cl100k tokens, benchmark-tuned) |
 | Memory          | ConversationBufferWindowMemory (k=5)     |
 | UI              | Streamlit with custom dark theme CSS     |
 
@@ -122,9 +122,11 @@ streamlit run app.py
 ```
 financial-rag-chatbot/
 ├── app.py              # Main Streamlit app (UI + RAG pipeline + PDF loader)
+├── chunking.py         # Sentence-aware token-budget chunker (benchmark-tuned defaults)
 ├── eval_harness.py     # Retrieval + generation evaluation harness
 ├── tests/
-│   └── test_smoke.py   # CI smoke tests (ast-parse sources, check key files)
+│   ├── test_smoke.py       # CI smoke tests (ast-parse sources, check key files)
+│   └── test_chunking.py    # Chunker invariant tests (no API key needed)
 ├── docs/
 │   └── screenshot.png  # UI screenshot embedded in this README
 ├── .streamlit/
@@ -145,12 +147,56 @@ financial-rag-chatbot/
 ## How It Works
 
 1. **PDF Ingestion** — PyMuPDF reads uploaded PDFs from bytes (no temp files needed), extracts text page-by-page with metadata (source file, page number)
-2. **Chunking** — RecursiveCharacterTextSplitter breaks pages into overlapping 1000-character chunks for optimal retrieval granularity
+2. **Chunking** — a sentence-aware chunker (`chunking.py`) packs whole sentences into chunks of at most 256 tokens, measured with the embedding model's own tokenizer (cl100k_base), so chunk boundaries never cut through a sentence mid-thought (see [Chunking configuration](#chunking-configuration-and-why) for why)
 3. **Embedding** — OpenAI `text-embedding-3-small` converts chunks into dense vectors
 4. **Indexing** — ChromaDB stores vectors in a persistent local database for fast similarity search
 5. **Retrieval** — MMR retrieval fetches top-5 most relevant and diverse chunks from a candidate pool of 15
 6. **Generation** — GPT-4o-mini generates answers grounded in retrieved context, with a financial-domain system prompt enforcing citation and precision
 7. **Memory** — Sliding window keeps last 5 conversation turns for multi-turn follow-up questions
+
+---
+
+## Chunking configuration (and why)
+
+The chunking defaults are not folklore — they come from
+[rag-chunking-bench](https://github.com/kantamaniprakash/genai-lab/tree/main/rag-chunking-bench),
+my controlled benchmark of chunking strategies that compares chunkers under a
+**matched retrieved-token budget** (so bigger chunks don't win just by handing
+the LLM more text) with paired bootstrap confidence intervals.
+
+**Defaults: sentence-packed chunks of ≤ 256 tokens, no overlap, tokens counted
+with cl100k_base (the embedding model's own tokenizer).**
+
+What the benchmark measured that motivates each choice:
+
+- **Sentence packing over character/window splitting.** Chunkers that only cut
+  at sentence boundaries beat fixed token windows at every matched size on the
+  benchmark's short-answer dataset, and at the size this app uses the gap was
+  largest on long-reference corpora (including a corpus of financial
+  documents): **+0.083 SpanRecall** at 256 tokens and a 400-token retrieval
+  budget — cutting mid-sentence cuts through exactly the evidence the
+  retriever needs.
+- **256 tokens, not smaller.** This app retrieves k=5 chunks of ≤ 256 tokens
+  (≈ 1,000–1,300 tokens of context), which is the benchmark's generous-budget
+  regime. There, on corpora whose answers span whole sentences or paragraphs
+  (like financial filings), sentence-256 was the **top configuration of all 12
+  tested** (SpanRecall 0.845 at an 800-token budget, 0.938 at 1,600), and the
+  popular "smaller chunks are always better" rule inverted: 64-token chunks
+  scored significantly *worse* than 256 (−0.040 [−0.063, −0.018] at B=1,600).
+  Small chunks only win when answers are short spans and budgets are tight.
+- **No overlap.** At 256-token sentence packing, overlap of 1–2 sentences
+  moved recall by a statistically insignificant −0.014 to +0.010 while
+  inflating the index by 21–44% more chunks. Overlap earns its cost only for
+  *fixed windows* (where it repairs broken boundaries) or small sentence
+  chunks — sentence packing at this size already gets that benefit for free.
+
+**Caveats, honestly stated:** the benchmark measured retrieval (span recall of
+gold evidence), not end-to-end answer quality; its budgets are in regex word
+tokens while this app budgets cl100k BPE tokens (~same regime, not identical
+units); and its retrievers were BM25/TF-IDF/LSA/MiniLM rather than
+`text-embedding-3-small`. The findings transferred across all four retriever
+families whose encoders read the full chunk — which an 8K-context OpenAI
+embedder does — but I have not yet re-run the grid with OpenAI embeddings.
 
 ---
 

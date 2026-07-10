@@ -17,11 +17,12 @@ import tempfile
 # LangChain imports
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
+
+from chunking import chunk_documents
 
 # ─── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -74,8 +75,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─── Constants ─────────────────────────────────────────────────────────────────
-CHUNK_SIZE = 1000
-CHUNK_OVERLAP = 200
+# Chunking defaults come from the budget-matched benchmark in
+# https://github.com/kantamaniprakash/genai-lab (rag-chunking-bench);
+# rationale and numbers are in this repo's README under "Chunking configuration".
+CHUNK_TOKENS = 256
+CHUNK_OVERLAP_SENTENCES = 0
 TOP_K_RETRIEVAL = 5
 PERSIST_DIR = "./chroma_db"
 
@@ -114,16 +118,11 @@ if "chunk_count" not in st.session_state:
 # ─── Helper Functions ──────────────────────────────────────────────────────────
 
 def load_and_chunk_pdfs(uploaded_files: list) -> list:
-    """Load PDFs and split into chunks."""
+    """Load PDFs and split into sentence-aware, token-budgeted chunks."""
     import fitz
     from langchain_core.documents import Document
 
     all_docs = []
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
-        separators=["\n\n", "\n", ".", " "]
-    )
     for uploaded_file in uploaded_files:
         pdf_bytes = uploaded_file.read()
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
@@ -137,7 +136,11 @@ def load_and_chunk_pdfs(uploaded_files: list) -> list:
                     metadata={"source_file": uploaded_file.name, "page": page_num + 1}
                 ))
         doc.close()
-        chunks = splitter.split_documents(docs)
+        chunks = chunk_documents(
+            docs,
+            max_tokens=CHUNK_TOKENS,
+            overlap_sentences=CHUNK_OVERLAP_SENTENCES,
+        )
         all_docs.extend(chunks)
     return all_docs
 

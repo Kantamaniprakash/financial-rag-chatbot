@@ -5,6 +5,14 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Replaced the character-based text splitter (RecursiveCharacterTextSplitter, 1000 chars / 200 overlap) with a sentence-aware chunker (`chunking.py`) that packs whole sentences into chunks of at most 256 tokens, counted with the embedding model's own tokenizer (cl100k_base). Defaults come from budget-matched retrieval benchmarks in [rag-chunking-bench](https://github.com/kantamaniprakash/genai-lab/tree/main/rag-chunking-bench); rationale and numbers are in the README's "Chunking configuration" section.
+
+### Added
+- Invariant tests for the chunker (`tests/test_chunking.py`): hard token budget, no dropped text, sentence-boundary alignment, overlap semantics, page-metadata preservation, determinism. Runnable standalone or under pytest, no API key required.
+
 ## [0.1.0] - 2026-07-05
 
 ### Added
