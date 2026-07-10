@@ -6,7 +6,7 @@ langchain-community==0.3.31       # >=0.3.27: CVE-2025-6984
 langchain-chroma==0.2.3           # replaces deprecated langchain_community.vectorstores.Chroma;
                                   # kept at 0.2.3: 0.2.4+ force chromadb>=1.0.9, and all chromadb 1.x
                                   # carry unfixed CVE-2026-45829 (pre-auth RCE in the Chroma server API)
-langchain-text-splitters==0.3.11  # >=0.3.9: CVE-2025-6985
+langchain-text-splitters==1.1.2  # >=0.3.9: CVE-2025-6985
 langsmith>=0.8.18                 # security floor (transitive via langchain-core)
 chromadb==0.6.3                   # latest release with no known CVEs (1.x line: CVE-2026-45829, no fix)
 posthog>=2.4.0,<6                 # chromadb 0.6.x telemetry is incompatible with posthog 6+ (log spam)
